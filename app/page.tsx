@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, ChevronDown, CircleHelp, FileText, Home, LogOut, Menu, Plus, Settings, Share2, Sparkles, Users, WalletCards, X, Check, Clock3, ArrowUpRight } from 'lucide-react'
+import { Bell, ChevronDown, FileText, Home, LogOut, Menu, Plus, Settings, Share2, Sparkles, Users, WalletCards, X, Check, Clock3, ArrowUpRight } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const projects = [
   { id: '1', name: 'Viaje a Antigua', meta: '4 participantes · GTQ 2,500', date: '15 dic 2024', progress: 68, color: 'bg-coral', icon: '✦' },
@@ -14,8 +15,22 @@ export default function PoolPay() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [toast, setToast] = useState('')
+  const [projectName, setProjectName] = useState('')
+  const [goalAmount, setGoalAmount] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
   const nav = [{ label: 'Inicio', icon: Home }, { label: 'Mis proyectos', icon: FileText }, { label: 'Configuración', icon: Settings }]
   const notify = (message: string) => { setToast(message); setTimeout(() => setToast(''), 2600) }
+  const createProject = async () => {
+    if (!projectName.trim() || !goalAmount || Number(goalAmount) <= 0) return notify('Completa el nombre y una meta válida.')
+    setIsSaving(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setIsSaving(false); return notify('Inicia sesión para crear un proyecto.') }
+    const { error } = await supabase.from('projects').insert({ owner_id: user.id, name: projectName.trim(), currency: 'GTQ', goal_amount: Number(goalAmount), status: 'active' })
+    setIsSaving(false)
+    if (error) return notify('No pudimos guardar el proyecto. Intenta de nuevo.')
+    setProjectName(''); setGoalAmount(''); setShowModal(false); notify('Proyecto creado. ¡Listo para invitar a tu equipo!')
+  }
 
   return <div className="min-h-screen bg-cream">
     <header className="sticky top-0 z-20 border-b border-[#e8e5dc] bg-cream/95 backdrop-blur">
@@ -35,7 +50,7 @@ export default function PoolPay() {
         <section className="mt-12 grid gap-5 lg:grid-cols-[1.3fr_0.7fr]"><div className="rounded-3xl bg-white p-6 shadow-[0_8px_28px_rgba(18,33,31,0.05)]"><div className="mb-6 flex items-center justify-between"><div><h2 className="display text-xl font-bold">Actividad reciente</h2><p className="mt-1 text-sm text-[#7e867f]">Tus últimos movimientos en PoolPay.</p></div><button onClick={() => notify('Mostrando toda la actividad')} className="text-sm font-bold text-teal">Ver todo</button></div><div className="space-y-5"><Activity icon={<Check size={16}/>} title="Aporte registrado" desc="Viaje a Antigua · GTQ 350" time="Hace 2 horas"/><Activity icon={<Users size={16}/>} title="Nueva persona se unió" desc="Regalo de cumpleaños · Sofía M." time="Ayer"/><Activity icon={<Clock3 size={16}/>} title="Aporte por revisar" desc="Casa compartida · GTQ 700" time="Ayer" coral/></div></div><div className="relative overflow-hidden rounded-3xl bg-sage p-6"><Sparkles className="absolute -right-2 -top-2 h-24 w-24 rotate-12 text-white/70"/><div className="relative"><p className="mb-8 text-sm font-bold uppercase tracking-[0.15em] text-teal">Tip de PoolPay</p><h3 className="display max-w-[230px] text-2xl font-bold leading-tight">La claridad también es una forma de cuidar.</h3><p className="mt-4 text-sm leading-6 text-[#52655c]">Mantén a todos al día con recordatorios amables y transparentes.</p><button onClick={() => notify('Los recordatorios se activarán pronto.')} className="mt-6 rounded-full bg-white px-4 py-2 text-sm font-bold text-ink">Aprender más</button></div></div></section>
       </main>
     </div>
-    {showModal && <div className="fixed inset-0 z-30 grid place-items-center bg-ink/30 p-5"><div className="w-full max-w-md rounded-3xl bg-cream p-7 shadow-2xl"><div className="mb-6 flex items-start justify-between"><div><p className="text-sm font-bold text-teal">Nuevo proyecto</p><h2 className="display mt-1 text-3xl font-bold">¿Qué vamos a organizar?</h2></div><button onClick={() => setShowModal(false)} aria-label="Cerrar"><X/></button></div><label className="mb-2 block text-sm font-bold">Nombre del proyecto</label><input placeholder="Ej. Viaje a la playa" className="mb-4 w-full rounded-2xl border border-[#dedbd0] bg-white px-4 py-3 outline-none focus:border-teal"/><label className="mb-2 block text-sm font-bold">Meta estimada</label><div className="mb-6 flex rounded-2xl border border-[#dedbd0] bg-white"><span className="grid place-items-center px-4 text-sm font-bold text-[#7e867f]">GTQ</span><input placeholder="0.00" className="w-full rounded-r-2xl px-2 py-3 outline-none"/></div><button onClick={() => {setShowModal(false); notify('Proyecto creado. ¡Listo para invitar a tu equipo!')}} className="w-full rounded-full bg-ink px-5 py-3.5 font-bold text-white">Crear proyecto</button></div></div>}
+    {showModal && <div className="fixed inset-0 z-30 grid place-items-center bg-ink/30 p-5"><div className="w-full max-w-md rounded-3xl bg-cream p-7 shadow-2xl"><div className="mb-6 flex items-start justify-between"><div><p className="text-sm font-bold text-teal">Nuevo proyecto</p><h2 className="display mt-1 text-3xl font-bold">¿Qué vamos a organizar?</h2></div><button onClick={() => setShowModal(false)} aria-label="Cerrar"><X/></button></div><label className="mb-2 block text-sm font-bold">Nombre del proyecto</label><input value={projectName} onChange={event => setProjectName(event.target.value)} placeholder="Ej. Viaje a la playa" className="mb-4 w-full rounded-2xl border border-[#dedbd0] bg-white px-4 py-3 outline-none focus:border-teal"/><label className="mb-2 block text-sm font-bold">Meta estimada</label><div className="mb-6 flex rounded-2xl border border-[#dedbd0] bg-white"><span className="grid place-items-center px-4 text-sm font-bold text-[#7e867f]">GTQ</span><input value={goalAmount} onChange={event => setGoalAmount(event.target.value)} inputMode="decimal" placeholder="0.00" className="w-full rounded-r-2xl px-2 py-3 outline-none"/></div><button onClick={createProject} disabled={isSaving} className="w-full rounded-full bg-ink px-5 py-3.5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60">{isSaving ? 'Guardando…' : 'Crear proyecto'}</button></div></div>}
     {toast && <div role="status" className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white shadow-xl">{toast}</div>}
   </div>
 }
