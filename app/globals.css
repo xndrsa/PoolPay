@@ -1,3 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-@tailwind base; @tailwind components; @tailwind utilities;
+@import "tailwindcss";
+@theme {
+  --color-cream: #f8f7f2;
+  --color-ink: #12211f;
+  --color-teal: #1f7a70;
+  --color-coral: #d67860;
+  --color-sage: #dce9d8;
+  --color-mint: #e9f4ee;
+}
 :root { --font-geist: 'DM Sans', sans-serif; } * { box-sizing: border-box; } body { margin: 0; background: #f8f7f2; color: #12211f; font-family: 'DM Sans', sans-serif; } button, input, select { font: inherit; } .display { font-family: 'Space Grotesk', sans-serif; }
