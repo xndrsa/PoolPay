@@ -22,8 +22,8 @@ export default function LoginPage() {
   async function sendMagicLink() {
     if (!email) { setError('Escribe tu correo para recibir el enlace de acceso.'); return }
     setLoading(true); setError(''); setMessage('')
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
-    const { error: magicError } = await createClient().auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } })
+    const redirectTo = new URL(process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`); redirectTo.searchParams.set('next', nextPath)
+    const { error: magicError } = await createClient().auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo.toString() } })
     if (magicError) setError('No pudimos enviar el enlace. Verifica tu correo.')
     else setMessage('Revisa tu correo y abre el enlace para entrar sin contraseña.')
     setLoading(false)

@@ -11,8 +11,8 @@ export default function InviteAccept({ token, projectId, projectName, inviteeEma
     if (!isLoggedIn) {
       if (!inviteeEmail) { setMessage('Para entrar sin contraseña necesitamos un correo. El teléfono queda guardado para contacto mientras SMS está pausado.'); return }
       setLoading(true)
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/invite/${token}`)}`
-      const { error } = await createClient().auth.signInWithOtp({ email: inviteeEmail, options: { emailRedirectTo: redirectTo } })
+      const redirectTo = new URL(process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`); redirectTo.searchParams.set('next', `/invite/${token}`)
+      const { error } = await createClient().auth.signInWithOtp({ email: inviteeEmail, options: { emailRedirectTo: redirectTo.toString() } })
       setLoading(false)
       setMessage(error ? 'No pudimos enviar el acceso. Intenta nuevamente.' : `Enlace enviado a ${inviteeEmail}. Ábrelo para entrar sin contraseña.`)
       return
