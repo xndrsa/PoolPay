@@ -6,9 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 type Project = { id: string; name: string; currency: string; goal_amount: number | null }
 type Member = { id: string; user_id: string; profiles: { full_name: string | null } | { full_name: string | null }[] | null }
 
-export default function ContributionForm({ projects, initialProjectId }: { projects: Project[]; initialProjectId?: string }) {
+export default function ContributionForm({ projects, initialProjectId, initialMembers = [], hideProjectSelector = false }: { projects: Project[]; initialProjectId?: string; initialMembers?: Member[]; hideProjectSelector?: boolean }) {
   const [projectId, setProjectId] = useState(initialProjectId ?? '')
-  const [members, setMembers] = useState<Member[]>([])
+  const [members, setMembers] = useState<Member[]>(initialMembers)
   const [memberId, setMemberId] = useState('')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
@@ -39,7 +39,7 @@ export default function ContributionForm({ projects, initialProjectId }: { proje
   }
 
   return <form onSubmit={submit} className="mt-8 space-y-5">
-    <label className="block text-sm font-semibold">Proyecto<select value={projectId} onChange={(e) => void chooseProject(e.target.value)} className="mt-2 w-full rounded-xl border border-[#dedbd0] bg-white px-4 py-3 font-normal outline-none focus:border-[#177d73]"><option value="">Selecciona un proyecto</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name} · {project.currency}</option>)}</select></label>
+    {!hideProjectSelector && <label className="block text-sm font-semibold">Proyecto<select value={projectId} onChange={(e) => void chooseProject(e.target.value)} className="mt-2 w-full rounded-xl border border-[#dedbd0] bg-white px-4 py-3 font-normal outline-none focus:border-[#177d73]"><option value="">Selecciona un proyecto</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name} · {project.currency}</option>)}</select></label>}
     <label className="block text-sm font-semibold">Participante<select value={memberId} onChange={(e) => setMemberId(e.target.value)} disabled={!projectId} className="mt-2 w-full rounded-xl border border-[#dedbd0] bg-white px-4 py-3 font-normal outline-none focus:border-[#177d73] disabled:bg-[#f3f2ec]"><option value="">Selecciona quién aportó</option>{members.map((member) => { const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles; return <option key={member.id} value={member.id}>{profile?.full_name || 'Participante'}</option> })}</select></label>
     <div className="grid gap-5 sm:grid-cols-2"><label className="block text-sm font-semibold">Monto<input required type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2 w-full rounded-xl border border-[#dedbd0] bg-white px-4 py-3 font-normal outline-none focus:border-[#177d73]" placeholder="0.00" /></label><label className="block text-sm font-semibold">Fecha<input required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-2 w-full rounded-xl border border-[#dedbd0] bg-white px-4 py-3 font-normal outline-none focus:border-[#177d73]" /></label></div>
     <label className="block text-sm font-semibold">Nota <span className="font-normal text-[#8b9188]">(opcional)</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#dedbd0] bg-white px-4 py-3 font-normal outline-none focus:border-[#177d73]" placeholder="Ej. Transferencia para la reserva" /></label>
