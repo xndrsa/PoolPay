@@ -32,7 +32,7 @@ export default function SignUpPage() {
     const credentials = { email, password }
     const { data, error: signUpError } = await supabase.auth.signUp({ ...credentials, options: { emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`, data: { full_name: name, phone: phone ? `${selected.dial}${phone}` : null, country_code: country } } })
     if (signUpError) setError('No pudimos crear la cuenta. Verifica tus datos e inténtalo de nuevo.')
-    else if (data.session) window.location.href = '/'
+    else if (data.session) window.location.href = new URLSearchParams(window.location.search).get('next') || '/'
     else setMessage('Revisa tu correo para confirmar tu cuenta.')
     setLoading(false)
   }

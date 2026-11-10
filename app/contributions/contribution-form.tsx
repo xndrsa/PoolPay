@@ -6,8 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 type Project = { id: string; name: string; currency: string; goal_amount: number | null }
 type Member = { id: string; user_id: string; profiles: { full_name: string | null } | { full_name: string | null }[] | null }
 
-export default function ContributionForm({ projects }: { projects: Project[] }) {
-  const [projectId, setProjectId] = useState('')
+export default function ContributionForm({ projects, initialProjectId }: { projects: Project[]; initialProjectId?: string }) {
+  const [projectId, setProjectId] = useState(initialProjectId ?? '')
   const [members, setMembers] = useState<Member[]>([])
   const [memberId, setMemberId] = useState('')
   const [amount, setAmount] = useState('')
